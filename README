@@ -10,12 +10,13 @@ or http://www.gnu.org/licenses/gpl-3.0.txt
 
 INTRODUCTION
 ------------
-This package contains the MATLAB code for Fast Ranking via Metric Learning (FRML).  
+This package contains the MATLAB code for Fast Ranking via Metric Learning (FRML).
 The latest version of this software can be found at the URL above.
 
 The software included here implements the algorithm described in
 
-Lim, D.K.H., and Lanckriet, G.R.G. Efficient Learning of Mahalanobis Metrics for Ranking. 
+Lim, D.K.H., and Lanckriet, G.R.G. Efficient Learning of Mahalanobis Metrics for
+ Ranking.
 Proceedings of the 31st International Conference on Machine Learning (ICML), 2014
 
 Please cite this paper if you use this code.
@@ -42,10 +43,14 @@ bsxfun implementation.
 INCLUDED FILES
 --------------
 
-get_sim_diff.m          - Generates similar/dissimilar index sets for use with frml_warp.m for various cases.
+get_sim_diff.m          - Generates similar/dissimilar index sets for use with
+                          frml_warp.m for various cases.
 frml_demo.m             - Demo script that shows how to use frml_warp.
-mlr_test_largescale.m   - Script to evaluate retrieval performance using a low-rank metric
-IN300folds.mat          - Data from 3 classes from ImageNet, 100 images each split into folds ready for use.
+mlr_test_largescale.m   - Script to evaluate retrieval performance using a
+                          low-rank/factored metric
+IN300folds.mat          - Data from 3 classes from ImageNet, split into folds
+                          ready for use with the algorithm. Each image is encoded
+                          using vector quantization with SIFT features.
 README                  - This file
 
 Documentation for each function is provided within each file.
