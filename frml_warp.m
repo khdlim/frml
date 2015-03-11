@@ -449,19 +449,14 @@ if indiv_similarity
         rand_index = floor(rand*length(sim_x)+1);
         idx_j =  sim_x(rand_index);
     end
+    diff_x = dif{idx_i};
 
-    if size(Ytrain,2) == 2
-        diff_x = Ytrain{idx_i,2};
-    else
-        diff_x = dif{idx_i};
-    end
 else
     sim_x = sim{Ytrain(idx_i)};
     if isscalar(sim_x)
         % x is the only one of its class, so no positive points exist
         idx_j = nan;
     else
-
         while 1
             rand_index = floor(rand*length(sim_x)+1);
             idx_j = sim_x(rand_index);% + class_start(classid_reverse_lookup);
@@ -471,7 +466,9 @@ else
         end
     end
     diff_x = dif{Ytrain(idx_i)};
+
 end
+
 end
 
 function [reg_p, reg_q] = get_regularizer_gradient(reg_index, x_ij, x_ik, L, regularizer)
