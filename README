@@ -1,0 +1,58 @@
+Fast Ranking via Metric Learning (FRML-1.1)
+
+AUTHORS:
+Daryl Lim <dklim@ucsd.edu>
+
+This code is distributed under the GNU GPL license.  See LICENSE for details
+or http://www.gnu.org/licenses/gpl-3.0.txt
+
+
+
+INTRODUCTION
+------------
+This package contains the MATLAB code for Fast Ranking via Metric Learning (FRML).  
+The latest version of this software can be found at the URL above.
+
+The software included here implements the algorithm described in
+
+Lim, D.K.H., and Lanckriet, G.R.G. Efficient Learning of Mahalanobis Metrics for Ranking. 
+Proceedings of the 31st International Conference on Machine Learning (ICML), 2014
+
+Please cite this paper if you use this code.
+
+
+
+INSTALLATION
+------------
+
+1. Requirements
+
+This software requires MATLAB R2007a or later.  Because it makes extensive use
+of the "bsxfun" function, earlier versions of Matlab will not work.
+
+If you have an older Matlab installation, you can install an alternative bsxfun
+implementation by going to
+
+http://www.mathworks.com/matlabcentral/fileexchange/23005,
+
+however, this may not work, and it will certainly be slower than the native
+bsxfun implementation.
+
+
+INCLUDED FILES
+--------------
+
+get_sim_diff.m          - Generates similar/dissimilar index sets for use with frml_warp.m for various cases.
+frml_demo.m             - Demo script that shows how to use frml_warp.
+mlr_test_largescale.m   - Script to evaluate retrieval performance using a low-rank metric
+IN300folds.mat          - Data from 3 classes from ImageNet, 100 images each split into folds ready for use.
+README                  - This file
+
+Documentation for each function is provided within each file.
+
+FEEDBACK
+--------
+
+Please send any queries to Daryl Lim <dklim@ucsd.edu>.
+
+
