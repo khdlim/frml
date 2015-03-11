@@ -15,15 +15,6 @@ indiv_similarity = 0;
 target_k = N;
 [similar,different] = get_sim_diff(indiv_similarity,target_k, Xtrain,Ytrain);
 
-%% - Code broken
-% target_k = 3;
-% [similar, different] =  get_sim_diff(1,target_k, Xtrain,Ytrain);
-% Ytrain = cell(length(Ytrain),2)
-% for idx = 1:length(Ytrain)
-%     Ytrain{idx,1} = similar{idx}
-%     Ytrain{idx,2} = different{idx}
-% end
-
 %set parameters for experiment. commented parameters are not necessary as
 %they are the default values.
 
