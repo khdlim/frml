@@ -55,8 +55,6 @@ function [L, Diag, converged] = frml_warp(init_L, Xtrain,Ytrain, Xval, Yval, par
 %
 % batchsize: minibatch size. Default 5
 %
-% manifold: If 1, use Riemannian manifold gradient descent on LL'. If 0, use regular gradient descent on L.
-%
 % report_interval: How often validation set performance is measured.
 %
 % verbose: if 1, prints out a list of all actual parameter settings (including defaults) prior to running
@@ -106,7 +104,6 @@ function [L, Diag, converged] = frml_warp(init_L, Xtrain,Ytrain, Xval, Yval, par
 %                             'init_L',           [],     ...
 %                             'sparse',           [],     ...
 %                             'batchsize',        [],     ...
-%                             'manifold',         [],     ...
 %                             'valid_criteria',   [],      ...
 %                             'verbose',          [],      ...
 %                             'iter_offset',      [],      ...
@@ -127,7 +124,6 @@ runtime_params.loss            = set_default(params, 'loss',              'rec')
 runtime_params.sparse_matrix   = set_default(params, 'sparse_matrix',     0);
 runtime_params.valid_criteria  = set_default(params, 'valid_criteria',    'MAP');
 runtime_params.batchsize       = set_default(params, 'batchsize',         5);
-runtime_params.manifold        = set_default(params, 'manifold',          1);
 runtime_params.report_interval = set_default(params, 'report_interval',   1000);
 runtime_params.iter_offset     = set_default(params, 'iter_offset',       0);
 runtime_params.time_offset     = set_default(params, 'time_offset',       0);
@@ -147,7 +143,6 @@ loss            = runtime_params.loss;
 sparse_matrix   = runtime_params.sparse_matrix;
 valid_criteria  = runtime_params.valid_criteria;
 batchsize       = runtime_params.batchsize;
-manifold        = runtime_params.manifold;
 report_interval = runtime_params.report_interval;
 time_offset     = runtime_params.time_offset;
 iter_offset     = runtime_params.iter_offset;
@@ -232,10 +227,8 @@ p               = zeros(dim, batchsize*3);
 q               = zeros(dim, batchsize*3);
 
 
-if manifold
-    %initialize pseudoinverse of L
-    pL = (L'*L)\L';
-end
+%initialize pseudoinverse of L
+pL = (L'*L)\L';
 
 % start timer
 t = tic;
@@ -326,57 +319,40 @@ for idx = 1:num_iter
     end
     ns_all(idx) = num_samples;
 
-    if manifold
-        % find low rank gradient if violator found
-        if d_ik < (d_ij + 1)
-            rank1_x = floor(length(diff_x)/num_samples);
-            loss_value = loss_table(rank1_x+1)/ loss_table(length(diff_x)+1);
-            p(:,(grad_rank+1):(grad_rank+2)) = -stepsize* 1/batchsize * (1-lam) * loss_value  * [x_ij, -x_ik];
-            q(:,(grad_rank+1):(grad_rank+2)) = [x_ij, x_ik];
-            grad_rank = grad_rank + 2;
+    % find low rank gradient if violator found
+    if d_ik < (d_ij + 1)
+        rank1_x = floor(length(diff_x)/num_samples);
+        loss_value = loss_table(rank1_x+1)/ loss_table(length(diff_x)+1);
+        p(:,(grad_rank+1):(grad_rank+2)) = -stepsize* 1/batchsize * (1-lam) * loss_value  * [x_ij, -x_ik];
+        q(:,(grad_rank+1):(grad_rank+2)) = [x_ij, x_ik];
+        grad_rank = grad_rank + 2;
 
-        end
-
-        % find low rank gradient for regularizer
-        reg_index = reg_indices(reg_counter);
-        [reg_p,reg_q] =  get_regularizer_gradient(reg_index, x_ij,x_ij,L,regularizer);
-        p(:,(grad_rank+1)) = -stepsize* 1/batchsize * lam * reg_p;
-        q(:,(grad_rank+1)) = reg_q;
-        grad_rank = grad_rank + 1;
-
-        if reg_counter == reg_maxindex, reg_indices = randperm(reg_maxindex); reg_counter = 0; end
-        reg_counter = reg_counter + 1;
-    else
-        if d_ik < (d_ij + 1)
-            gradl = L'*x_ij*x_ij'-L'*x_ik*x_ik';
-            gradient = (1/batchsize * ((1-lam)*gradl + lam * L' * x_ij *x_ij'))';
-            avg_grad = avg_grad + gradient;
-        else
-            gradient = (1/batchsize * lam * L' * x_ij *x_ij')';
-            avg_grad = avg_grad + gradient;
-        end
     end
+
+    % find low rank gradient for regularizer
+    reg_index = reg_indices(reg_counter);
+    [reg_p,reg_q] =  get_regularizer_gradient(reg_index, x_ij,x_ij,L,regularizer);
+    p(:,(grad_rank+1)) = -stepsize* 1/batchsize * lam * reg_p;
+    q(:,(grad_rank+1)) = reg_q;
+    grad_rank = grad_rank + 1;
+
+    if reg_counter == reg_maxindex, reg_indices = randperm(reg_maxindex); reg_counter = 0; end
+    reg_counter = reg_counter + 1;
 
 
     %Update gradients
     minibatch_count = minibatch_count + 1;
     if minibatch_count == batchsize
-        %If manifold, use retraction
-        if manifold
-            p = p(:,1:grad_rank);
-            q = q(:,1:grad_rank);
-            if grad_rank > 0
-                [L,pL] = gradient_update_L(L, pL, p, q);
-            end
-            minibatch_count = 0;
-            grad_rank = 0;
-            p = zeros(dim, batchsize*3);
-            q = zeros(dim, batchsize*3);
-        else
-            L = L - stepsize*avg_grad;
-            avg_grad = zeros(size(L));
-            minibatch_count = 0;
+        %Use retraction
+        p = p(:,1:grad_rank);
+        q = q(:,1:grad_rank);
+        if grad_rank > 0
+            [L,pL] = gradient_update_L(L, pL, p, q);
         end
+        minibatch_count = 0;
+        grad_rank = 0;
+        p = zeros(dim, batchsize*3);
+        q = zeros(dim, batchsize*3);
     end
 
     counter = counter + 1;
