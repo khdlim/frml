@@ -282,6 +282,12 @@ for idx = 1:num_iter
 
 
     idx_i = indices(counter);
+    counter = counter + 1;
+    if counter == n + 1
+        counter = 1;
+        indices = randperm(n);
+    end
+
     [idx_j, diff_x] = sample_relevant_index(indiv_similarity, Ytrain, sim, dif, idx_i);
     if isnan(idx_j),continue,end
 
@@ -353,12 +359,6 @@ for idx = 1:num_iter
         grad_rank = 0;
         p = zeros(dim, batchsize*3);
         q = zeros(dim, batchsize*3);
-    end
-
-    counter = counter + 1;
-    if counter == n + 1
-        counter = 1;
-        indices = randperm(n);
     end
 
 end
